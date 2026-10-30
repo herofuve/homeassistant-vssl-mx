@@ -1,0 +1,34 @@
+name: Bug report
+description: Algo no funciona con la integración
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar. Adjunta siempre el log de depuración
+        (`custom_components.vssl_mx: debug`).
+  - type: input
+    id: model
+    attributes:
+      label: Modelo y firmware del VSSL
+      placeholder: "MA.1 · 0.0.161.0xff2d7c5"
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Versión de Home Assistant
+      placeholder: "2026.2.3"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Qué esperabas y qué ocurrió
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      render: shell

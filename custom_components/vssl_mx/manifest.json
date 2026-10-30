@@ -1,0 +1,14 @@
+{
+  "domain": "vssl_mx",
+  "name": "VSSL MX",
+  "codeowners": ["@herofuve"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/herofuve/homeassistant-vssl-mx",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/herofuve/homeassistant-vssl-mx/issues",
+  "loggers": ["custom_components.vssl_mx"],
+  "requirements": [],
+  "version": "0.1.0"
+}

@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "VSSL MX",
+        "description": "Introduce la IP del amplificador VSSL (serie MX: MA.1 / MS.1). El equipo debe estar encendido o en standby de red y accesible desde Home Assistant en el puerto 80.",
+        "data": {
+          "host": "Dirección IP",
+          "port": "Puerto"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No se pudo hablar con el equipo. Comprueba la IP y que responda en el puerto 80 (http://IP/index.fcgi).",
+      "unknown": "Error inesperado. Revisa los registros de Home Assistant."
+    },
+    "abort": {
+      "already_configured": "Este amplificador ya está configurado."
+    }
+  }
+}
