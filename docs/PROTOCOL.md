@@ -1,57 +1,57 @@
-# Protocolo NSDK de VSSL (serie MX) — referencia
+# VSSL (MX series) NSDK protocol — reference
 
-Todo lo aquí descrito se verificó contra un **VSSL MA.1** con firmware `rc20` /
-`0.0.161.0xff2d7c5`. El equipo es un dispositivo **StreamSDK** de StreamUnlimited:
-su web (`/index.fcgi`) se titula "StreamSDK Main Page" y carga `/jsapi/nsdk-api.js`,
-que documenta la API que usa esta integración.
+Everything below was verified against a **VSSL MA.1** running firmware `rc20` /
+`0.0.161.0xff2d7c5`. The unit is a **StreamSDK** device from StreamUnlimited: its web UI
+(`/index.fcgi`) is titled "StreamSDK Main Page" and loads `/jsapi/nsdk-api.js`, which
+documents the API this integration uses.
 
-## Transporte
+## Transport
 
-HTTP en claro, puerto **80**, sin autenticación.
+Plain HTTP, port **80**, no authentication.
 
 ```
-GET  /api/getData?path=<modulo:/ruta>&roles=<rol[,rol]>|@all&_nocache=1
+GET  /api/getData?path=<module:/path>&roles=<role[,role]>|@all&_nocache=1
 GET  /api/getRows?path=<container>&roles=@all&from=0&to=N
 POST /api/setData    {"path": "...", "role": "...", "value": ...}
 POST /api/event/modifyQueue {"queueId":"","subscribe":[{"path":..,"type":"itemWithValue"}],"unsubscribe":[]}
 GET  /api/event/pollQueue?queueId=...
 ```
 
-- Las rutas usan el formato `modulo:/ruta` (`settings:/deviceName`, `player:volume`).
-- Los valores son objetos tipados: `{"type":"i32_","i32_":45}`, `bool_`, `string_`, `double_`.
-- Ruta inexistente → HTTP 500 con `{"error":{"name":"CMAbstractWorker::invalidPath",...}}`.
-- `getRows` sobre un **container** lista sus hijos: es la única forma de descubrir el árbol
-  (no hay listado global de módulos).
-- `pollQueue` es un long-poll real: bloquea hasta que hay evento; el parámetro `timeout`
-  no corta la espera en esta build.
+- Paths use the `module:/path` form (`settings:/deviceName`, `player:volume`).
+- Values are typed objects: `{"type":"i32_","i32_":45}`, `bool_`, `string_`, `double_`.
+- Unknown path -> HTTP 500 with `{"error":{"name":"CMAbstractWorker::invalidPath",...}}`.
+- `getRows` on a **container** lists its children: the only way to discover the tree
+  (there is no global module listing).
+- `pollQueue` is a true long-poll: it blocks until an event arrives; the `timeout`
+  parameter does not cut the wait short on this build.
 
-## Rutas relevantes
+## Relevant paths
 
-| Uso | Ruta | Tipo |
+| Purpose | Path | Type |
 |---|---|---|
-| Nombre | `settings:/deviceName` | value (string, escribible) |
-| Versión | `settings:/version`, `settings:/versionSDK`, `settings:/releasetext` | value |
-| Modelo | `settings:/system/boardName` (`VSSL MA1`), `productName` (`Mx series 2025`) | value |
-| Volumen | `player:volume` | value (i32 0-100) |
+| Name | `settings:/deviceName` | value (string, writable) |
+| Version | `settings:/version`, `settings:/versionSDK`, `settings:/releasetext` | value |
+| Model | `settings:/system/boardName` (`VSSL MA1`), `productName` (`Mx series 2025`) | value |
+| Volume | `player:volume` | value (i32 0-100) |
 | Mute | `settings:/mediaPlayer/mute` | value (bool) |
-| Volumen máx. | `settings:/mediaPlayer/maxVolume`, `settings:/dsp/maxVolumeLimit` | value |
+| Max volume | `settings:/mediaPlayer/maxVolume`, `settings:/dsp/maxVolumeLimit` | value |
 | EQ | `settings:/mediaPlayer/{bass,treble,balance,loudness,equalizerOnOff,subCrossoverFreq,subwooferLevel}` | value |
-| LED BLAST | `settings:/leds/*` | value |
-| **Control de reproducción** | **`player:player/control`** | action |
-| Estado / pista | `player:player/data/value` | value (`playLogicData`) |
-| Energía (objetivo) | `powermanager:target` (`online` / `networkStandby`) | value |
-| Encender / standby | `ui:/poweronline`, `ui:/powernetworkstandby` | action |
+| BLAST LED | `settings:/leds/*` | value |
+| **Playback control** | **`player:player/control`** | action |
+| State / track | `player:player/data/value` | value (`playLogicData`) |
+| Power target | `powermanager:target` (`online` / `networkStandby`) | value |
+| Power on / standby | `ui:/poweronline`, `ui:/powernetworkstandby` | action |
 | Find me | `vssl:/findMeEnabled` | value (bool) |
-| Temporizador standby | `vssl:/standbyTimer/stop`, `vssl:/standbyTimer/remainingTime` | action/value |
-| Aprender IR | `vssl:/learn/trigger`, `vssl:/learn/cancel` | action |
+| Standby timer | `vssl:/standbyTimer/stop`, `vssl:/standbyTimer/remainingTime` | action/value |
+| IR learning | `vssl:/learn/trigger`, `vssl:/learn/cancel` | action |
 
-## Comandos de reproducción
+## Playback commands
 
-Se envían al nodo de acción `player:player/control` con `role: "activate"`. La clase
-`PlayerCommand` del APK oficial tiene un campo `control`:
+Sent to the action node `player:player/control` with `role: "activate"`. The `PlayerCommand`
+class in the official APK carries a `control` field:
 
 ```json
-{"control": "pause"}          // play/pausa (el firmware lo trata como toggle)
+{"control": "pause"}          // play/pause (the firmware treats it as a toggle)
 {"control": "next"}
 {"control": "previous"}
 {"control": "stop"}
@@ -59,10 +59,10 @@ Se envían al nodo de acción `player:player/control` con `role: "activate"`. La
 {"control": "changePlayMode", "playMode": {...}}
 ```
 
-## Cambio de entrada
+## Input selection
 
-Mismo nodo, con payload `mediaRoles`. **El array `resources` es obligatorio**: sin él el
-equipo responde `500 Failed to start playback, internal streamer error`.
+Same node, with a `mediaRoles` payload. **The `resources` array is mandatory**: without it
+the device answers `500 Failed to start playback, internal streamer error`.
 
 ```json
 {
@@ -82,7 +82,7 @@ equipo responde `500 Failed to start playback, internal streamer error`.
 }
 ```
 
-| Entrada | `path` | `serviceID` | icono |
+| Input | `path` | `serviceID` | icon |
 |---|---|---|---|
 | Line in (AUX) | `ui:/auxaux_plug` | `AUX` | `skin:iconAUX` |
 | SPDIF in | `ui:/spdifinaux_plug` | `SPDIFIN` | `skin:iconOptics` |
@@ -90,30 +90,33 @@ equipo responde `500 Failed to start playback, internal streamer error`.
 | HDMI in | `ui:/hdmiaux_plug` | `HDMI` | `skin:iconHdmi` |
 | USB Memory | `ui:/usbMemaux_plug` | `Storage` | `skin:iconUsb` |
 
-Respuesta correcta: HTTP 200 con un entero (id interno de la transición). El cambio se
-confirma leyendo `player:player/data/value` → `playLogicData.trackRoles.mediaData.metaData.serviceID`.
+A successful switch returns HTTP 200 with an integer (internal transition id) and is
+confirmed by reading `player:player/data/value` ->
+`playLogicData.trackRoles.mediaData.metaData.serviceID`.
 
-## Estado de reproducción
+## Playback state
 
-`player:player/data/value` devuelve un objeto `playLogicData` con `state`
-(`playing`/`paused`/`stopped`/`transitioning`) y `trackRoles` (título, artista, álbum,
-`mediaData.metaData.serviceID`). El puerto TCP **4545** emite además el mismo JSON en
-streaming continuo (útil para *now playing* sin sondeo).
+`player:player/data/value` returns a `playLogicData` object with `state`
+(`playing`/`paused`/`stopped`/`transitioning`) and `trackRoles` (title, artist, album,
+`mediaData.metaData.serviceID`). TCP port **4545** additionally streams the same JSON
+continuously (useful for *now playing* without polling).
 
-## Puertos del MA.1
+## Ports on the MA.1
 
-`80` API web + NSDK · `443` misma web por HTTPS · `4545` stream JSON de estado ·
-`7000` AirPlay · `8008`/`8009` Google Cast · `1883`-no, `16300`/`16500` artefactos del
-firmware `rc` de desarrollo (16500 = Syncthing) · `10001` TLS con certificado de cliente
-(canal de la app CNCT, no usable sin ella).
+`80` web UI + NSDK API · `443` same UI over HTTPS · `4545` JSON state stream ·
+`7000` AirPlay · `8008`/`8009` Google Cast · `16300`/`16500` development-`rc` firmware
+artifacts (16500 is Syncthing) · `10001` TLS requiring a client certificate (the CNCT app
+channel, unusable without the app).
 
-**No existen** los puertos `50002` ni `7777` del protocolo legacy de la serie X: por eso la
-integración `vsslctrl` de HACS falla con `Error fetching zone info, is the zone connected?`.
+The legacy X-series ports `50002` and `7777` **do not exist** on this hardware — which is
+why the `vsslctrl` HACS integration fails with
+`Error fetching zone info, is the zone connected?`.
 
-## Cómo se obtuvo
+## How this was found
 
-La API web no expone transporte ni selección de fuente: el árbol de navegación (`ui:`) se
-puede listar pero sus filas no son direccionables. Las rutas y payloads de control salieron
-de analizar el APK oficial **`com.vssl.app.sx` v2.1.5** (clases
-`com.example.streamkit.data.network.ApiService` → `activateValue(path, role)` y el paquete
-`model/valueactivator/PlayerCommand`), extrayendo las constantes de los DEX con `androguard`.
+The local web API exposes no transport control and no input selection: the browse tree
+(`ui:`) can be listed but its rows are not addressable. The control paths and payloads came
+from analysing the official **`com.vssl.app.sx` v2.1.5** APK (classes
+`com.example.streamkit.data.network.ApiService` -> `activateValue(path, role)` and the
+`model/valueactivator/PlayerCommand` package), extracting the DEX string constants with
+`androguard`.

@@ -1,4 +1,4 @@
-"""media_player para VSSL MA.1 / serie MX vía NSDK."""
+"""media_player for the VSSL MA.1 / MX series over NSDK."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Crea el reproductor."""
+    """Creates the player entity."""
     coordinator: VsslCoordinator = entry.runtime_data
     async_add_entities([VsslMediaPlayer(coordinator, entry)])
 
@@ -87,7 +87,7 @@ class VsslMediaPlayer(CoordinatorEntity[VsslCoordinator], MediaPlayerEntity):
             configuration_url=f"http://{entry.data.get('host')}/",
         )
 
-    # ------------------------------------------------------------- Estado
+    # ----------------------------------------------------------------- State
     @property
     def _state(self) -> VsslState:
         return self.coordinator.data
@@ -130,7 +130,7 @@ class VsslMediaPlayer(CoordinatorEntity[VsslCoordinator], MediaPlayerEntity):
             "vssl_player_state": self._state.player_state,
         }
 
-    # ----------------------------------------------------------- Comandos
+    # -------------------------------------------------------------- Commands
     async def async_set_volume_level(self, volume: float) -> None:
         await self.coordinator.api.set_volume(round(volume * 100))
         await self.coordinator.async_request_refresh()
@@ -152,7 +152,7 @@ class VsslMediaPlayer(CoordinatorEntity[VsslCoordinator], MediaPlayerEntity):
     async def async_select_source(self, source: str) -> None:
         key = INPUT_KEY_BY_NAME.get(source)
         if key is None:
-            _LOGGER.warning("Fuente no soportada por NSDK: %s", source)
+            _LOGGER.warning("Source not supported over NSDK: %s", source)
             return
         await self.coordinator.api.select_input(key)
         await self.coordinator.async_request_refresh()

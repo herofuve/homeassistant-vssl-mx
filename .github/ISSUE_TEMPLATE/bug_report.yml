@@ -1,30 +1,30 @@
 name: Bug report
-description: Algo no funciona con la integración
+description: Something is not working with the integration
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Gracias por reportar. Adjunta siempre el log de depuración
+        Thanks for reporting. Please always attach the debug log
         (`custom_components.vssl_mx: debug`).
   - type: input
     id: model
     attributes:
-      label: Modelo y firmware del VSSL
+      label: VSSL model and firmware
       placeholder: "MA.1 · 0.0.161.0xff2d7c5"
     validations:
       required: true
   - type: input
     id: ha
     attributes:
-      label: Versión de Home Assistant
+      label: Home Assistant version
       placeholder: "2026.2.3"
     validations:
       required: true
   - type: textarea
     id: what
     attributes:
-      label: Qué esperabas y qué ocurrió
+      label: What did you expect and what happened
     validations:
       required: true
   - type: textarea

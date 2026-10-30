@@ -1,4 +1,4 @@
-"""Coordinator de datos para la integración VSSL MX."""
+"""Data coordinator for the VSSL MX integration."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class VsslState:
-    """Estado del amplificador en un instante."""
+    """Amplifier state snapshot."""
 
     power: str = "unknown"
     volume: int = 0
@@ -52,7 +52,7 @@ class VsslState:
 
 
 class VsslCoordinator(DataUpdateCoordinator[VsslState]):
-    """Sondea el equipo cada pocos segundos."""
+    """Polls the device every few seconds."""
 
     def __init__(
         self,
@@ -78,9 +78,9 @@ class VsslCoordinator(DataUpdateCoordinator[VsslState]):
                 self.api.get_data(PATH_PLAYER_DATA, "value"),
             )
         except VsslConnectionError as err:
-            raise UpdateFailed(f"Sin conexión con el VSSL: {err}") from err
+            raise UpdateFailed(f"Cannot reach the VSSL device: {err}") from err
         except VsslApiError as err:
-            raise UpdateFailed(f"Error de la API del VSSL: {err}") from err
+            raise UpdateFailed(f"VSSL API error: {err}") from err
 
         player = parse_player_value(raw_player)
         source_id = player.get("service_id")
@@ -97,7 +97,7 @@ class VsslCoordinator(DataUpdateCoordinator[VsslState]):
             duration=_as_int(player.get("duration")),
             progress=_as_int(player.get("progress")),
         )
-        _LOGGER.debug("Estado VSSL: %s", state)
+        _LOGGER.debug("VSSL state: %s", state)
         return state
 
 

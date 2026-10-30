@@ -1,8 +1,8 @@
 """Constants for the VSSL MX integration.
 
-Todo lo de este fichero está verificado contra un VSSL MA.1 con firmware
-rc20 / 0.0.161.0xff2d7c5. Las rutas provienen de la API NSDK que expone el
-propio equipo en el puerto 80 y del APK oficial (com.vssl.app.sx v2.1.5).
+Everything in this file was verified against a VSSL MA.1 running firmware
+rc20 / 0.0.161.0xff2d7c5. Paths come from the NSDK API the device exposes on
+port 80 and from the official APK (com.vssl.app.sx v2.1.5).
 """
 
 from __future__ import annotations
@@ -35,8 +35,8 @@ PATH_POWER_STANDBY: Final = "ui:/powernetworkstandby"
 
 PATH_FIND_ME: Final = "vssl:/findMeEnabled"
 
-# URI de recurso que espera el equipo al activar una entrada local.
-# Sin este bloque (y sin la lista "resources") responde
+# Resource URI the device expects when activating a local input.
+# Without this block (and without the "resources" list) it answers
 # "Failed to start playback, internal streamer error".
 RESOURCE_URI: Final = (
     "alsa://aux_plug?rate=48000?channels=2?format=S16LE"
@@ -44,8 +44,8 @@ RESOURCE_URI: Final = (
 )
 RESOURCE_MIME: Final = "audio/unknown"
 
-# --- Entradas físicas -------------------------------------------------------
-# key -> (path NSDK, serviceID del equipo, icono, nombre visible en HA)
+# --- Physical inputs --------------------------------------------------------
+# key -> (NSDK path, device serviceID, icon, name shown in HA)
 INPUTS: Final[dict[str, dict[str, str]]] = {
     "aux": {
         "path": "ui:/auxaux_plug",
@@ -81,7 +81,7 @@ INPUTS: Final[dict[str, dict[str, str]]] = {
 
 SOURCE_LIST: Final[list[str]] = [spec["name"] for spec in INPUTS.values()]
 
-# serviceID que reporta el equipo -> nombre visible (incluye fuentes de red)
+# serviceID reported by the device -> name shown in HA (network sources included)
 SOURCE_NAME_BY_SERVICE: Final[dict[str, str]] = {
     **{spec["service"]: spec["name"] for spec in INPUTS.values()},
     "googlecast": "Google Cast",
@@ -93,12 +93,12 @@ SOURCE_NAME_BY_SERVICE: Final[dict[str, str]] = {
     "roon": "Roon",
 }
 
-# Nombre visible -> key de INPUTS (para async_select_source)
+# Name shown in HA -> INPUTS key (for async_select_source)
 INPUT_KEY_BY_NAME: Final[dict[str, str]] = {
     spec["name"]: key for key, spec in INPUTS.items()
 }
 
-# --- Comandos de transporte (PlayerCommand.control) -------------------------
+# --- Transport commands (PlayerCommand.control) ----------------------------
 TRANSPORT_PLAY: Final = "play"
 TRANSPORT_PAUSE: Final = "pause"
 TRANSPORT_STOP: Final = "stop"

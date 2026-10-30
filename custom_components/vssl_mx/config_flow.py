@@ -1,4 +1,4 @@
-"""Config flow de VSSL MX: pide la IP y valida contra el equipo."""
+"""Config flow for VSSL MX: asks for the IP and validates it against the device."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class VsslMxConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Alta del amplificador."""
+    """Amplifier setup."""
 
     VERSION = 1
 
@@ -36,13 +36,13 @@ class VsslMxConfigFlow(ConfigFlow, domain=DOMAIN):
             try:
                 identity = await api.get_identity()
             except VsslConnectionError as err:
-                _LOGGER.debug("No se pudo conectar con %s: %s", host, err)
+                _LOGGER.debug("Could not connect to %s: %s", host, err)
                 errors["base"] = "cannot_connect"
             except VsslError as err:
-                _LOGGER.debug("Respuesta inesperada de %s: %s", host, err)
+                _LOGGER.debug("Unexpected response from %s: %s", host, err)
                 errors["base"] = "cannot_connect"
             except Exception:  # noqa: BLE001
-                _LOGGER.exception("Error inesperado validando %s", host)
+                _LOGGER.exception("Unexpected error validating %s", host)
                 errors["base"] = "unknown"
             else:
                 if not identity.get("name"):

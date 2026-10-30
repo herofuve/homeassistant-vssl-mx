@@ -5,78 +5,78 @@
 [![Validate](https://github.com/herofuve/homeassistant-vssl-mx/actions/workflows/validate.yml/badge.svg)](https://github.com/herofuve/homeassistant-vssl-mx/actions/workflows/validate.yml)
 [![License](https://img.shields.io/github/license/herofuve/homeassistant-vssl-mx)](LICENSE)
 
-Control local de amplificadores **VSSL serie MX** (`MA.1`, `MS.1`) desde Home Assistant,
-hablando la API **NSDK (StreamSDK)** que el propio equipo expone en el puerto 80.
-Sin nube, sin HACS-dependencias, sin infrarrojos.
+Local control of **VSSL MX-series** amplifiers (`MA.1`, `MS.1`) from Home Assistant, using the
+**NSDK (StreamSDK)** API the device exposes on its own LAN port 80. No cloud, no IR blaster,
+no extra services.
 
-> Serie **X** (A.1, A.1x, A.3, A.3x, A.6x): esa generación usa otro protocolo (TCP 50002/7777)
-> y **no** la cubre esta integración — para esos equipos está la integración de la comunidad
-> [`vsslctrl`](https://github.com/vsslctrl/integration.home-assistant).
-> Serie **SX** (altavoz/subwoofer): comparten plataforma StreamSDK, sin verificar todavía.
+> **X series** (`A.1`, `A.1x`, `A.3`, `A.3x`, `A.6x`): that generation speaks a different
+> protocol (TCP 50002/7777) and is **not** covered here — use the community integration
+> [`vsslctrl`](https://github.com/vsslctrl/integration.home-assistant) for those units.
+> **SX series** (speaker/subwoofer): same StreamSDK platform, not verified yet.
 
-> ⚠️ Proyecto independiente. **No está afiliado ni respaldado por VSSL / Soundvision
-> Technologies.** "VSSL" es marca de sus propietarios.
+> ⚠️ Independent project. **Not affiliated with or endorsed by VSSL / Soundvision
+> Technologies.** "VSSL" is a trademark of its respective owners.
 
-## Estado
+## Status
 
-| Firmware probado | Home Assistant | Versión |
+| Tested firmware | Home Assistant | Version |
 |---|---|---|
 | MA.1 · `rc20` / `0.0.161.0xff2d7c5` | 2026.2.3 | 0.1.0 |
 
-## Qué hace
+## What it does
 
-Un `media_player` completo para el amplificador:
+A single `media_player` entity for the amplifier:
 
-| Función | Implementación NSDK |
+| Function | NSDK implementation |
 |---|---|
-| Volumen absoluto (0-100) y ± paso | `player:volume` |
+| Absolute volume (0-100) and step up/down | `player:volume` |
 | Mute | `settings:/mediaPlayer/mute` |
-| Encendido / standby de red | `ui:/poweronline` · `ui:/powernetworkstandby` |
-| Play/Pausa, Stop, Siguiente, Anterior | `player:player/control` (`PlayerCommand`) |
-| **Selección de entrada**: AUX, SPDIF, COAX, HDMI, USB | `player:player/control` + payload `mediaRoles` |
-| Estado, título, artista, álbum | `player:player/data/value` |
+| Power on / network standby | `ui:/poweronline` · `ui:/powernetworkstandby` |
+| Play/Pause, Stop, Next, Previous | `player:player/control` (`PlayerCommand`) |
+| **Input selection**: AUX, SPDIF, COAX, HDMI, USB | `player:player/control` + `mediaRoles` payload |
+| State, title, artist, album | `player:player/data/value` |
 
-Las fuentes de red (Spotify, Google Cast, AirPlay, UPnP) aparecen como `source` cuando
-están activas, pero no se pueden arrancar desde Home Assistant: se inician desde su app.
+Network sources (Spotify, Google Cast, AirPlay, UPnP) show up as the current `source` when
+active, but cannot be started from Home Assistant — they are started from their own app.
 
-## Instalación
+## Installation
 
-### HACS (recomendado)
+### HACS (recommended)
 
-1. HACS → menú de tres puntos → **Repositorios personalizados**.
-2. URL: `https://github.com/herofuve/homeassistant-vssl-mx` · Categoría: **Integración**.
-3. Instala **VSSL MX** y reinicia Home Assistant.
-4. *Ajustes → Dispositivos y servicios → Añadir integración → VSSL MX*.
-5. Introduce la IP del amplificador (el puerto es 80 por defecto).
+1. HACS → three-dot menu → **Custom repositories**.
+2. URL: `https://github.com/herofuve/homeassistant-vssl-mx` · Category: **Integration**.
+3. Install **VSSL MX** and restart Home Assistant.
+4. *Settings → Devices & services → Add integration → VSSL MX*.
+5. Enter the amplifier IP address (port 80 by default).
 
 ### Manual
 
-Copia `custom_components.vssl_mx/` a tu carpeta `config/custom_components/` y reinicia.
+Copy `custom_components/vssl_mx/` into your `config/custom_components/` folder and restart.
 
-## Requisitos
+## Requirements
 
-- El amplificador debe ser alcanzable desde Home Assistant en el **puerto 80**.
-  Comprobación: `http://<ip>/index.fcgi` muestra la página "StreamSDK".
-- Para el botón de encendido desde apagado, el equipo debe estar en **standby de red**
-  (no desenchufado).
+- The amplifier must be reachable from Home Assistant on **port 80**.
+  Quick check: `http://<ip>/index.fcgi` returns the "StreamSDK" page.
+- For the power button to wake the unit from off, it must be in **network standby**
+  (not unplugged).
 
-## Limitaciones conocidas
+## Known limitations
 
-- Sondeo cada 5 s (4 peticiones HTTP en paralelo); no usa todavía la cola de eventos NSDK,
-  así que un cambio hecho desde otra app puede tardar hasta 5 s en reflejarse.
-- `play/pause` se envía como comando `pause`, que el firmware interpreta como *toggle*.
-- `next/prev/stop/seek` solo tienen efecto con una fuente de red activa; las entradas
-  físicas no tienen transporte.
-- No expone EQ, LED BLAST, presets ni temporizador de standby (previsto para 0.2).
+- Polling every 5 s (4 parallel HTTP requests); the NSDK event queue is not used yet, so a
+  change made from another app can take up to 5 s to show up.
+- `play/pause` is sent as the `pause` command, which the firmware treats as a *toggle*.
+- `next/prev/stop/seek` only have an effect with an active network source; physical inputs
+  have no transport.
+- EQ, BLAST LED, presets and the standby timer are not exposed yet (planned for 0.2).
 
-## Diagnóstico
+## Troubleshooting
 
 ```bash
 curl "http://<ip>/api/getData?path=settings:/deviceName&roles=value"
 # -> [{"type":"string_","string_":"Ampli Medusa"}]
 ```
 
-Log de depuración en Home Assistant:
+Debug logging in Home Assistant:
 
 ```yaml
 logger:
@@ -84,22 +84,22 @@ logger:
     custom_components.vssl_mx: debug
 ```
 
-## Cómo funciona (resumen técnico)
+## How it works (technical summary)
 
-El equipo es un dispositivo StreamSDK de StreamUnlimited. Su web (`/index.fcgi`) carga
-`/jsapi/nsdk-api.js`, que documenta la API:
+The unit is a StreamSDK device from StreamUnlimited. Its web UI (`/index.fcgi`) loads
+`/jsapi/nsdk-api.js`, which documents the API:
 
 ```
-GET  /api/getData?path=<modulo:/ruta>&roles=<rol[@all]>
+GET  /api/getData?path=<module:/path>&roles=<role[@all]>
 GET  /api/getRows?path=<container>&roles=@all&from=0&to=N
 POST /api/setData {"path":..,"role":..,"value":..}
 POST /api/event/modifyQueue    GET /api/event/pollQueue
 ```
 
-Las rutas de control (`player:player/control`, `powermanager:target`, `ui:/poweronline`…)
-y el formato exacto de los comandos se obtuvieron analizando el APK oficial de la app
-VSSL CNCT (`com.vssl.app.sx`). Detalle completo en `docs/PROTOCOL.md`.
+The control paths (`player:player/control`, `powermanager:target`, `ui:/poweronline`, ...)
+and the exact command payloads were extracted from the official VSSL CNCT app APK
+(`com.vssl.app.sx`). Full details in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
 
-## Licencia
+## License
 
-MIT — ver [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).

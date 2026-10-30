@@ -1,8 +1,7 @@
-"""Integración VSSL MX para Home Assistant.
+"""VSSL MX integration for Home Assistant.
 
-Controla amplificadores VSSL de la serie MX (MA.1, MS.1) hablando la API
-NSDK que el equipo expone en su puerto 80. No requiere HACS, ni IR, ni
-nubes intermedias.
+Controls VSSL MX-series amplifiers (MA.1, MS.1) over the NSDK API the device
+exposes on port 80. No cloud, no IR, no extra services.
 """
 
 from __future__ import annotations
@@ -26,7 +25,7 @@ VsslConfigEntry = ConfigEntry[VsslCoordinator]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: VsslConfigEntry) -> bool:
-    """Configura la entrada creada por el config flow."""
+    """Set up the entry created by the config flow."""
     session = async_get_clientsession(hass)
     api = VsslMxApi(
         session,
@@ -47,5 +46,5 @@ async def async_setup_entry(hass: HomeAssistant, entry: VsslConfigEntry) -> bool
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: VsslConfigEntry) -> bool:
-    """Descarga la plataforma al eliminar o recargar la entrada."""
+    """Unload the platform when the entry is removed or reloaded."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

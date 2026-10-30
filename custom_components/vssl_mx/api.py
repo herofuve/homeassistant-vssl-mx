@@ -1,11 +1,11 @@
-"""Cliente asíncrono de la API NSDK de VSSL MX.
+"""Async client for the VSSL MX NSDK API.
 
-Sólo depende de aiohttp (lo aporta Home Assistant). Sin imports de Home
-Assistant, para poder probarlo contra el equipo desde un script suelto.
+Only depends on aiohttp (shipped with Home Assistant) and imports nothing from
+Home Assistant, so it can be tested against the device from a plain script.
 
-Endpoints del equipo (puerto 80, HTTP en claro, sin autenticación):
+Device endpoints (port 80, plain HTTP, no authentication):
 
-    GET  /api/getData?path=<modulo:/ruta>&roles=<rol[,rol]>|@all
+    GET  /api/getData?path=<module:/path>&roles=<role[,role]>|@all
     GET  /api/getRows?path=<container>&roles=@all&from=0&to=N
     POST /api/setData  {"path":..,"role":..,"value":..}
     POST /api/event/modifyQueue   -> queueId
@@ -48,22 +48,22 @@ _MAC_RE = re.compile(r"([0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5})")
 
 
 class VsslError(Exception):
-    """Error genérico de la API NSDK."""
+    """Generic NSDK API error."""
 
 
 class VsslConnectionError(VsslError):
-    """No se pudo hablar con el equipo."""
+    """Could not talk to the device."""
 
 
 class VsslApiError(VsslError):
-    """El equipo respondió con un error de aplicación."""
+    """The device answered with an application-level error."""
 
 
 def unwrap(values: Any) -> Any:
     """Convierte [{"type":"i32_","i32_":45}] -> 45.
 
-    NSDK devuelve los valores tipados; esto devuelve el valor Python plano.
-    Acepta también un dict suelto o un escalar.
+    NSDK returns typed values; this returns the plain Python value.
+    Also accepts a bare dict or a scalar.
     """
     if isinstance(values, list):
         if not values:
@@ -80,7 +80,7 @@ def unwrap(values: Any) -> Any:
 
 
 class VsslMxApi:
-    """Cliente mínimo del equipo."""
+    """Minimal device client."""
 
     def __init__(
         self,
@@ -126,9 +126,9 @@ class VsslMxApi:
                 except json.JSONDecodeError as err:
                     raise VsslApiError(f"Respuesta no JSON en {path}") from err
         except asyncio.TimeoutError as err:
-            raise VsslConnectionError(f"Timeout hablando con {self.host}") from err
+            raise VsslConnectionError(f"Timeout talking to {self.host}") from err
         except aiohttp.ClientError as err:
-            raise VsslConnectionError(f"Error de red con {self.host}: {err}") from err
+            raise VsslConnectionError(f"Network error with {self.host}: {err}") from err
 
     @staticmethod
     def _error_message(text: str) -> str:
@@ -139,9 +139,9 @@ class VsslMxApi:
         error = data.get("error") or {}
         return error.get("message") or error.get("name") or str(data)[:120]
 
-    # --------------------------------------------------------------- Lectura
+    # --------------------------------------------------------------- Reading
     async def get_data(self, nspath: str, roles: str = "value") -> Any:
-        """Devuelve la lista de roles pedida (valores tipados NSDK)."""
+        """Returns the requested list of roles (typed NSDK values)."""
         return await self._request(
             "GET",
             "/api/getData",
@@ -149,7 +149,7 @@ class VsslMxApi:
         )
 
     async def get_value(self, nspath: str) -> Any:
-        """Devuelve el valor ya desenvuelto."""
+        """Returns the already unwrapped value."""
         return unwrap(await self.get_data(nspath, "value"))
 
     async def get_rows(self, nspath: str, start: int = 0, end: int = 100) -> list[dict]:
@@ -169,7 +169,7 @@ class VsslMxApi:
         return []
 
     async def get_identity(self) -> dict[str, Any]:
-        """Nombre, versión, modelo y MAC (para el registro de dispositivo)."""
+        """Name, version, model and MAC (for the device registry)."""
         name, version, board, mac = await asyncio.gather(
             self.get_value(PATH_DEVICE_NAME),
             self.get_value("settings:/version"),
@@ -187,11 +187,11 @@ class VsslMxApi:
         }
 
     async def get_mac(self) -> str | None:
-        """La MAC real está en la web del equipo (/index.fcgi -> networkInfo).
+        """The real MAC lives in the device web UI (/index.fcgi -> networkInfo).
 
-        El JSON va escapado dentro de un <script>, así que no se puede buscar
-        '"mac":"' literal: se localiza el bloque "wired" y se toma la primera
-        MAC que aparezca detrás (eth0), con reserva a cualquier MAC válida.
+        The JSON is escaped inside a <script>, so searching for a literal
+        '"mac":"' does not work: the "wired" block is located and the first
+        MAC after it (eth0) is taken, falling back to any valid MAC.
         """
         try:
             async with self._session.get(
@@ -214,11 +214,11 @@ class VsslMxApi:
         return None
 
     async def get_player_state(self) -> dict[str, Any]:
-        """Extrae estado/entrada/pista de player:player/data/value."""
+        """Extracts state/input/track from player:player/data/value."""
         raw = await self.get_data(PATH_PLAYER_DATA, "value")
         return parse_player_value(raw)
 
-    # -------------------------------------------------------------- Escritura
+    # --------------------------------------------------------------- Writing
     async def set_value(
         self, nspath: str, value: Any, role: str = "value", vtype: str | None = None
     ) -> Any:
@@ -257,10 +257,10 @@ class VsslMxApi:
         await self.set_value(PATH_FIND_ME, bool(enabled))
 
     async def select_input(self, key: str) -> None:
-        """Activa una entrada física: aux|spdif|coax|hdmi|usb."""
+        """Activates a physical input: aux|spdif|coax|hdmi|usb."""
         spec = INPUTS.get(key.lower())
         if spec is None:
-            raise VsslApiError(f"Entrada desconocida: {key}")
+            raise VsslApiError(f"Unknown input: {key}")
         await self._player_command(
             {
                 "control": TRANSPORT_PLAY,
@@ -279,16 +279,16 @@ class VsslMxApi:
         )
 
     async def transport(self, command: str) -> None:
-        """play|pause|stop|next|previous sobre player:player/control."""
+        """play|pause|stop|next|previous on player:player/control."""
         await self._player_command({"control": command})
 
     async def _player_command(self, value: dict[str, Any]) -> Any:
-        # El payload va tal cual en "value": NO se envuelve en un tipo NSDK.
+        # The payload goes as-is in "value": it must NOT be wrapped in an NSDK type.
         return await self.activate(PATH_PLAYER_CONTROL, value)
 
-    # Alias semánticos para el media_player
+    # Semantic aliases for the media player
     async def play_pause(self) -> None:
-        await self.transport(TRANSPORT_PAUSE)  # el equipo lo trata como toggle
+        await self.transport(TRANSPORT_PAUSE)  # the device treats it as a toggle
 
     async def media_stop(self) -> None:
         await self.transport(TRANSPORT_STOP)
@@ -308,7 +308,7 @@ def parse_player_value(raw: Any) -> dict[str, Any]:
     """
     node = unwrap(raw)
     if isinstance(node, dict):
-        # unwrap devuelve el dict del tipo porque "playLogicData" no es un tipo simple
+        # unwrap returns the type dict because "playLogicData" is not a simple type
         play = node.get("playLogicData", node)
     else:
         play = {}
