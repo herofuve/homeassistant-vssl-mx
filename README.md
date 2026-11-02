@@ -76,7 +76,7 @@ Copy `custom_components/vssl_mx/` into your `config/custom_components/` folder a
 
 The commands below are **not part of the integration**: they are manual checks you run from a
 computer (or the Home Assistant host) on the **same network** as the amplifier. Replace `<ip>`
-with its address, e.g. `192.168.77.141`.
+with its address, e.g. `192.168.1.50`.
 
 **1. Does the web UI answer?**
 
