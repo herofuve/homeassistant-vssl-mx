@@ -90,8 +90,8 @@ curl -I "http://<ip>/index.fcgi"
 
 ```bash
 curl "http://<ip>/api/getData?path=settings:/deviceName&roles=value"
-# [{"type":"string_","string_":"Ampli Medusa"}]                 -> API OK ("Ampli Medusa" = your device name)
-# {"error":{"name":"CMAbstractWorker::invalidPath",...}}         -> it answered, but it is not the MX-series firmware
+# [{"type":"string_","string_":"my VSSL MA1 amp"}]                  -> API OK (the value is your device name)
+# {"error":{"name":"CMAbstractWorker::invalidPath",...}}          -> it answered, but it is not the MX-series firmware
 ```
 
 If both work, Home Assistant should be able to add the device. If step 1 fails the problem is
