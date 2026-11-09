@@ -1,6 +1,6 @@
 title: VSSL MX — Home Assistant integration
 description: >-
-  VSSL MA.1 / MS.1 amplifier control from Home Assistant
+  Local control over NSDK
 theme: jekyll-theme-cayman
 url: https://herofuve.github.io
 baseurl: /homeassistant-vssl-mx
