@@ -1,9 +1,10 @@
 # VSSL MX — Home Assistant integration
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub release](https://img.shields.io/github/v/release/herofuve/homeassistant-vssl-mx)](https://github.com/herofuve/homeassistant-vssl-mx/releases)
-[![Validate](https://github.com/herofuve/homeassistant-vssl-mx/actions/workflows/validate.yml/badge.svg)](https://github.com/herofuve/homeassistant-vssl-mx/actions/workflows/validate.yml)
-[![License](https://img.shields.io/github/license/herofuve/homeassistant-vssl-mx)](LICENSE)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
+[![Release](https://img.shields.io/github/v/release/herofuve/homeassistant-vssl-mx?display_name=tag&sort=semver&style=flat-square&label=release)](https://github.com/herofuve/homeassistant-vssl-mx/releases)
+[![Validate](https://github.com/herofuve/homeassistant-vssl-mx/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/herofuve/homeassistant-vssl-mx/actions/workflows/validate.yml)
+[![License](https://img.shields.io/github/license/herofuve/homeassistant-vssl-mx?style=flat-square)](LICENSE)
+[![HA version](https://img.shields.io/badge/Home%20Assistant-2026.2%2B-41BDF5.svg?style=flat-square)](https://github.com/herofuve/homeassistant-vssl-mx)
 
 Local control of **VSSL MX-series** amplifiers (`MA.1`, `MS.1`) from Home Assistant, using the
 **NSDK (StreamSDK)** API the device exposes on its own LAN port 80. No cloud, no IR blaster,
