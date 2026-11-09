@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://herofuve.github.io/homeassistant-vssl-mx/sitemap.xml

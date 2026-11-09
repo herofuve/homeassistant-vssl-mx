@@ -1,3 +1,9 @@
+---
+title: VSSL MX NSDK protocol reference
+description: Reverse-engineered reference for the VSSL MX-series (MA.1, MS.1) local NSDK/StreamSDK API: endpoints, paths, playback commands, discrete input switching and ports.
+keywords: VSSL NSDK, StreamSDK API, VSSL MA.1 API, Home Assistant integration, reverse engineering
+---
+
 # VSSL (MX series) NSDK protocol — reference
 
 Everything below was verified against a **VSSL MA.1** running firmware `rc20` /

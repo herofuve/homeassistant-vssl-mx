@@ -1,0 +1,10 @@
+title: VSSL MX — Home Assistant integration
+description: >-
+  Local control of VSSL MX-series amplifiers (MA.1, MS.1) from Home Assistant
+  using the StreamSDK/NSDK API the device exposes on the LAN. No cloud, no IR.
+theme: jekyll-theme-cayman
+url: https://herofuve.github.io
+baseurl: /homeassistant-vssl-mx
+plugins:
+  - jekyll-sitemap
+lang: en
