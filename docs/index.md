@@ -1,5 +1,4 @@
 ---
-title: "VSSL MX"
 description: "Control VSSL MA.1 and MS.1 amplifiers from Home Assistant over the local StreamSDK/NSDK API — volume, mute, power, play/pause and input selection (AUX, SPDIF, COAX, HDMI, USB), with no cloud and no IR blaster."
 keywords: "VSSL MA.1, VSSL MS.1, VSSL Home Assistant, VSSL integration, HA custom integration, StreamSDK, NSDK, multi-room amplifier, HACS"
 ---
