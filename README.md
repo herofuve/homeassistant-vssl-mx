@@ -10,6 +10,9 @@ Local control of **VSSL MX-series** amplifiers (`MA.1`, `MS.1`) from Home Assist
 **NSDK (StreamSDK)** API the device exposes on its own LAN port 80. No cloud, no IR blaster,
 no extra services.
 
+Documentation site (searchable, with the protocol write-up):
+**https://herofuve.github.io/homeassistant-vssl-mx/**
+
 > **X series** (`A.1`, `A.1x`, `A.3`, `A.3x`, `A.6x`): that generation speaks a different
 > protocol (TCP 50002/7777) and is **not** covered here — use the community integration
 > [`vsslctrl`](https://github.com/vsslctrl/integration.home-assistant) for those units.
