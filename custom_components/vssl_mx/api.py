@@ -380,6 +380,7 @@ def parse_player_value(raw: Any) -> dict[str, Any]:
 
     return {
         "state": play.get("state"),
+        "path": roles.get("path"),
         "service_id": media.get("serviceID") or media.get("serviceName"),
         "service_name": media.get("serviceName"),
         "title": _text(roles.get("title")),

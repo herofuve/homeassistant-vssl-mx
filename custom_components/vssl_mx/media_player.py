@@ -147,6 +147,7 @@ class VsslMediaPlayer(CoordinatorEntity[VsslCoordinator], MediaPlayerEntity):
             "vssl_power": self._state.power,
             "vssl_source_id": self._state.source_id,
             "vssl_player_state": self._state.player_state,
+            "vssl_entity_id": self.entity_id,
         }
 
     # -------------------------------------------------------------- Commands

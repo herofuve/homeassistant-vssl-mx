@@ -64,6 +64,18 @@ Copy `custom_components/vssl_mx/` into your `config/custom_components/` folder a
 - For the power button to wake the unit from off, it must be in **network standby**
   (not unplugged).
 
+## Playback state
+
+Audio coming in through a **live input** (AUX, SPDIF, COAX, HDMI, Streaming) is reported by the
+amplifier as `state: transitioning` — permanently, not just while it starts. The integration
+treats a live input with an active stream as *playing*, because that is what it is; otherwise
+Home Assistant would show *idle* while music plays. Streaming services that report their own
+state (`playing`, `paused`) are passed through unchanged.
+
+If a playlist is playing you see `playing`, the track title and the source; on a cable input
+you see `playing` plus the input name and no title, which is expected: the amplifier has no
+metadata to give for an analog or S/PDIF signal.
+
 ## Sources
 
 The source dropdown lists the inputs the amplifier physically has, plus the streaming

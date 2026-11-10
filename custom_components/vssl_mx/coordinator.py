@@ -101,7 +101,7 @@ class VsslCoordinator(DataUpdateCoordinator[VsslState]):
             power=_power_string(power),
             volume=_as_int(unwrap(volume)),
             muted=bool(unwrap(muted)),
-            player_state=player.get("state") or "stopped",
+            player_state=_player_state(player.get("state"), player.get("path")),
             source_id=source_id,
             source_name=_source_name(source_id),
             title=player.get("title"),
@@ -138,6 +138,30 @@ class VsslCoordinator(DataUpdateCoordinator[VsslState]):
     def invalidate_network_sources(self) -> None:
         """Force a re-probe on the next poll (after selecting a source)."""
         self._sources_at = 0.0
+
+
+LIVE_INPUT_PATH_SUFFIX = "_plug"
+
+
+def _player_state(state: Any, path: Any) -> str:
+    """Normalises the device's playLogicData.state.
+
+    The amplifier never leaves ``transitioning`` on a live input (AUX, SPDIF,
+    COAX, HDMI, Streaming): audio flows while the state stays there, so mapping
+    it to IDLE made Home Assistant show *idle* with music playing. A live input
+    with an active stream is PLAYING; a transitioning stream without a live path
+    (a track that is still starting) stays transitioning, which HA shows as idle
+    for a few seconds.
+
+    Verified on hardware: SPDIF reports state=transitioning indefinitely while
+    streaming audio; Spotify playback reports state=playing.
+    """
+    if not state:
+        return "stopped"
+    state = str(state)
+    if state == "transitioning" and str(path or "").endswith(LIVE_INPUT_PATH_SUFFIX):
+        return "playing"
+    return state
 
 
 def _source_name(source_id: Any) -> str | None:
