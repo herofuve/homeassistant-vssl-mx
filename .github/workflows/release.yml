@@ -1,0 +1,84 @@
+name: Release
+
+# Publishes a GitHub Release for a tag using the token GitHub gives the workflow
+# itself, so nobody has to hand over a personal access token.
+#
+# - Push a tag (v*)          -> the release is published automatically.
+# - Run it manually (Actions -> Release -> Run workflow) with a tag name
+#   -> publishes or re-fills an existing release (useful for old tags).
+#
+# If the repository root contains RELEASE_<tag>.md, those are the notes;
+# otherwise GitHub generates them from the commits.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v0.2.2). Leave empty when pushing a tag."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve the tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          TAG="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          if [ -z "$TAG" ]; then
+            echo "::error::No tag given and this is not a tag push."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "Publishing $TAG"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -eu
+          git checkout "tags/$TAG"
+          NOTES="RELEASE_${TAG}.md"
+          # Tags created before the notes existed do not carry the file: pull it
+          # from the default branch when it is missing from the tagged commit.
+          if [ ! -f "$NOTES" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/contents/$NOTES?ref=main" --jq .content 2>/dev/null \
+              | base64 -d > "$NOTES" || rm -f "$NOTES"
+          fi
+          TITLE="VSSL MX ${VERSION}"
+          EXISTS=$(gh release view "$TAG" --json tagName --jq .tagName 2>/dev/null || true)
+
+          if [ -f "$NOTES" ]; then
+            echo "Using hand-written notes from $NOTES"
+            if [ -n "$EXISTS" ]; then
+              gh release edit "$TAG" --title "$TITLE" --notes-file "$NOTES"
+            else
+              gh release create "$TAG" --title "$TITLE" --notes-file "$NOTES"
+            fi
+          else
+            echo "No $NOTES in the repo; generating notes from the commits"
+            if [ -n "$EXISTS" ]; then
+              gh release edit "$TAG" --title "$TITLE" --notes "$(gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$TAG" --jq .body)"
+            else
+              gh release create "$TAG" --title "$TITLE" --generate-notes
+            fi
+          fi
+
+          gh release view "$TAG" --json tagName,name,url --jq '"published: \(.tagName) — \(.name) — \(.url)"'
