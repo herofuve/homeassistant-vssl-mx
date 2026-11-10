@@ -14,10 +14,12 @@ from homeassistant.components.media_player import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .api import VsslError
 from .const import (
     CONF_ENTITY_NAME,
     DOMAIN,
@@ -123,6 +125,11 @@ class VsslMediaPlayer(CoordinatorEntity[VsslCoordinator], MediaPlayerEntity):
         return self._state.source_name
 
     @property
+    def source_list(self) -> list[str]:
+        """Physical inputs plus the streaming services usable right now."""
+        return self._state.source_list
+
+    @property
     def media_title(self) -> str | None:
         return self._state.title
 
@@ -162,11 +169,30 @@ class VsslMediaPlayer(CoordinatorEntity[VsslCoordinator], MediaPlayerEntity):
         await self.coordinator.async_request_refresh()
 
     async def async_select_source(self, source: str) -> None:
+        """Switch to a physical input or start a network source.
+
+        Physical inputs go through the mediaRoles payload of
+        player:player/control; network sources (Spotify, AirPlay, a paired
+        Bluetooth device) are "action" nodes the device must activate. Anything
+        else is rejected loudly instead of being ignored.
+        """
         key = INPUT_KEY_BY_NAME.get(source)
-        if key is None:
-            _LOGGER.warning("Source not supported over NSDK: %s", source)
-            return
-        await self.coordinator.api.select_input(key)
+        path = self._state.network_sources.get(source)
+        try:
+            if key is not None:
+                await self.coordinator.api.select_input(key)
+            elif path is not None:
+                await self.coordinator.api.activate(path)
+            else:
+                raise HomeAssistantError(
+                    f"Source '{source}' cannot be selected right now. "
+                    f"Available: {', '.join(self._state.source_list)}"
+                )
+        except VsslError as err:
+            raise HomeAssistantError(
+                f"Could not select source '{source}': {err}"
+            ) from err
+        self.coordinator.invalidate_network_sources()
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self) -> None:

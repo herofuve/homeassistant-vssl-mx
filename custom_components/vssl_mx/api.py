@@ -23,8 +23,11 @@ from typing import Any
 import aiohttp
 
 from .const import (
+    BT_DEVICE_PREFIX,
     DEFAULT_PORT,
     INPUTS,
+    NETWORK_SOURCES,
+    PATH_BLUETOOTH_UI,
     PATH_DEVICE_NAME,
     PATH_MUTE,
     PATH_PLAYER_CONTROL,
@@ -281,6 +284,52 @@ class VsslMxApi:
     async def transport(self, command: str) -> None:
         """play|pause|stop|next|previous on player:player/control."""
         await self._player_command({"control": command})
+
+    async def get_network_sources(self) -> dict[str, str]:
+        """Network sources usable *right now*, as {name shown in HA: action path}.
+
+        Physical inputs are not included: those go through select_input(). A
+        service is offered only when its action node is not ``disabled``.
+        """
+        sources: dict[str, str] = {}
+        for spec in NETWORK_SOURCES.values():
+            try:
+                data = await self.get_data(spec["path"], "@all")
+            except VsslError:
+                continue
+            node = data[0] if isinstance(data, list) else data
+            if not isinstance(node, dict) or node.get("disabled"):
+                continue
+            sources[spec["name"]] = spec["path"]
+
+        for name, path in await self._bluetooth_sources():
+            sources.setdefault(name, path)
+        return sources
+
+    async def _bluetooth_sources(self) -> list[tuple[str, str]]:
+        """Paired Bluetooth devices that can be connected right now."""
+        try:
+            rows = await self.get_rows(PATH_BLUETOOTH_UI, 0, 40)
+        except VsslError:
+            return []
+
+        found: list[tuple[str, str]] = []
+        for row in rows:
+            path = str(row.get("path") or "")
+            if not path.startswith(BT_DEVICE_PREFIX):
+                continue
+            base = path.split("/section")[0]
+            label = row.get("title") or base.rsplit("/", 1)[-1]
+            play_path = f"{base}/play"
+            try:
+                data = await self.get_data(play_path, "@all")
+            except VsslError:
+                continue
+            node = data[0] if isinstance(data, list) else data
+            if not isinstance(node, dict) or node.get("disabled"):
+                continue
+            found.append((f"Bluetooth {label}", play_path))
+        return found
 
     async def _player_command(self, value: dict[str, Any]) -> Any:
         # The payload goes as-is in "value": it must NOT be wrapped in an NSDK type.

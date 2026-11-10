@@ -126,3 +126,34 @@ from analysing the official **`com.vssl.app.sx` v2.1.5** APK (classes
 `com.example.streamkit.data.network.ApiService` -> `activateValue(path, role)` and the
 `model/valueactivator/PlayerCommand` package), extracting the DEX string constants with
 `androguard`.
+
+## Network sources: no "select input" command
+
+Physical inputs are switched by sending a `mediaRoles` payload to
+`player:player/control`. Streaming services work differently: they appear as **action
+nodes** under the `ui:` tree and the amplifier marks them `"disabled": true` when they
+cannot be used.
+
+| Node | Meaning | Observed when |
+|---|---|---|
+| `spotify:/ui/resume` | Resume the Spotify Connect session | enabled (Spotify account linked) |
+| `airplay:resumePlayback` | Resume AirPlay | `disabled`, title "No active session" |
+| `bluetooth:devices/<MAC>/play` | Connect and play that paired speaker | enabled, title "Connect and play" |
+| `bluetooth:devices/<MAC>/disconnect` | Disconnect | `disabled`, title "Not connected" |
+| `bluetooth:deviceList/scan` | Start a scan | always enabled |
+
+```http
+POST /api/setData
+{"path":"spotify:/ui/resume","role":"activate","value":{}}
+```
+
+Responds `null` and the player state flips to `serviceID: spotify` within one poll — this
+is what `select_source` does for a network source.
+
+**Google Cast and UPnP expose nothing to activate** (`ui:/googlecastlite` only offers
+`openHomeApp` and "Learn More"; `ui:/upnp` has zero rows). They take over the amplifier
+when a stream is pushed to it, so they can only be observed as the current `source`, never
+selected.
+
+The rows of the `ui:` tree for these services are *containers* (navigation only): requesting
+`ui:/spotify` directly answers `invalidPath`. Only the action nodes above are addressable.

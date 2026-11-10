@@ -101,6 +101,24 @@ INPUT_KEY_BY_NAME: Final[dict[str, str]] = {
     spec["name"]: key for key, spec in INPUTS.items()
 }
 
+# --- Network sources --------------------------------------------------------
+# Streaming sources are NOT activated with a mediaRoles payload: the device
+# exposes one "action" node per service and flags it "disabled": true when it
+# cannot be used right now (AirPlay with no session, an unpaired Bluetooth
+# device...). There is no generic "switch to Spotify/Cast" command: selecting a
+# source means activating that node. Google Cast and UPnP expose nothing to
+# activate at all: they take over the amplifier by themselves when a stream
+# arrives, so they cannot be offered as a source.
+PATH_BLUETOOTH_UI: Final = "ui:/bluetooth"
+BT_DEVICE_PREFIX: Final = "bluetooth:devices/"
+NETWORK_SOURCES: Final[dict[str, dict[str, str]]] = {
+    "spotify": {"path": "spotify:/ui/resume", "name": "Spotify"},
+    "airplay": {"path": "airplay:resumePlayback", "name": "AirPlay"},
+}
+# How often to re-probe which network sources are usable (seconds). The
+# availability changes when a session appears or a device pairs, not every poll.
+NETWORK_SOURCE_REFRESH: Final = 60
+
 # --- Transport commands (PlayerCommand.control) ----------------------------
 TRANSPORT_PLAY: Final = "play"
 TRANSPORT_PAUSE: Final = "pause"
