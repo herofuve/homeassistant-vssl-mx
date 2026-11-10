@@ -29,7 +29,7 @@
           "entity_name": "Entity name"
         },
         "data_description": {
-          "entity_name": "Optional. Defaults to \"<device name> (<model>)\", e.g. \"Living room (MA1)\". This decides the entity_id."
+          "entity_name": "Optional. Defaults to the device name plus the model, e.g. \"Living room (MA1)\". This decides the entity_id."
         }
       }
     },

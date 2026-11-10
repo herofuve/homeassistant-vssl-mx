@@ -29,7 +29,7 @@
           "entity_name": "Nombre de la entidad"
         },
         "data_description": {
-          "entity_name": "Opcional. Por defecto \"<nombre del equipo> (<modelo>)\", por ejemplo \"Salón (MA1)\". Esto decide el entity_id."
+          "entity_name": "Opcional. Por defecto, el nombre del equipo más el modelo, por ejemplo \"Salón (MA1)\". Esto decide el entity_id."
         }
       }
     },
