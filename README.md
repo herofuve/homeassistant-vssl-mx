@@ -71,11 +71,15 @@ services it can start **right now**:
 
 | Source | How it is selected |
 |---|---|
+| **Streaming** | The streamer itself: `ui:/streamaux_plug`. Hands the output to the network player |
 | AUX, SPDIF, COAX, HDMI, USB | Physical input: `player:player/control` with the `mediaRoles` payload |
 | Spotify | `spotify:/ui/resume` — only offered when a session can be resumed |
 | AirPlay | `airplay:resumePlayback` — only offered when a session is active |
 | `Bluetooth <device>` | `bluetooth:devices/<MAC>/play` for each paired device |
 | Google Cast, UPnP | **Not selectable**: the amplifier exposes no command for them, they take over when a stream arrives. They still show up as the current source while active. |
+
+*Streaming* is the input the VSSL app calls "Streaming": it selects the internal streamer, so whichever
+service is playing (Spotify Connect, AirPlay, Cast) takes over the output instead of a cable.
 
 The device flags unusable actions with `"disabled": true` (for example AirPlay with no
 session), so the list only offers what will actually work. Selecting a source that is not

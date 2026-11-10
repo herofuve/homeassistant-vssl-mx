@@ -50,6 +50,17 @@ RESOURCE_MIME: Final = "audio/unknown"
 # --- Physical inputs --------------------------------------------------------
 # key -> (NSDK path, device serviceID, icon, name shown in HA)
 INPUTS: Final[dict[str, dict[str, str]]] = {
+    # The streamer itself ("Streaming" in the VSSL app): selecting it hands the
+    # output to the network player (Spotify Connect, AirPlay, Cast...). Verified
+    # on hardware: path ui:/streamaux_plug, icon skin:iconStream, and it reuses
+    # the same ALSA resource as AUX. The serviceID it reports afterwards is
+    # whatever the streamer is playing.
+    "streaming": {
+        "path": "ui:/streamaux_plug",
+        "service": "Stream",
+        "icon": "skin:iconStream",
+        "name": "Streaming",
+    },
     "aux": {
         "path": "ui:/auxaux_plug",
         "service": "AUX",
@@ -85,8 +96,11 @@ INPUTS: Final[dict[str, dict[str, str]]] = {
 SOURCE_LIST: Final[list[str]] = [spec["name"] for spec in INPUTS.values()]
 
 # serviceID reported by the device -> name shown in HA (network sources included)
+# Keys are lowercase: the device is inconsistent about the case ("spotify" while
+# streaming from Spotify Connect, "Spotify" when the streamer reports itself).
 SOURCE_NAME_BY_SERVICE: Final[dict[str, str]] = {
-    **{spec["service"]: spec["name"] for spec in INPUTS.values()},
+    **{spec["service"].lower(): spec["name"] for spec in INPUTS.values()},
+    "stream": "Streaming",
     "googlecast": "Google Cast",
     "airplay": "AirPlay",
     "bluetooth": "Bluetooth",

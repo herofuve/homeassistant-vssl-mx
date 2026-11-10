@@ -103,7 +103,7 @@ class VsslCoordinator(DataUpdateCoordinator[VsslState]):
             muted=bool(unwrap(muted)),
             player_state=player.get("state") or "stopped",
             source_id=source_id,
-            source_name=SOURCE_NAME_BY_SERVICE.get(str(source_id), source_id),
+            source_name=_source_name(source_id),
             title=player.get("title"),
             artist=player.get("artist"),
             album=player.get("album"),
@@ -138,6 +138,23 @@ class VsslCoordinator(DataUpdateCoordinator[VsslState]):
     def invalidate_network_sources(self) -> None:
         """Force a re-probe on the next poll (after selecting a source)."""
         self._sources_at = 0.0
+
+
+def _source_name(source_id: Any) -> str | None:
+    """Maps the reported serviceID to the name shown in Home Assistant.
+
+    The device is inconsistent about capitalisation ("spotify" while playing
+    from Spotify Connect, "Spotify" when the streamer reports itself), so the
+    lookup is case-insensitive and falls back to whatever it reported.
+    """
+    if source_id in (None, ""):
+        return None
+    key = str(source_id)
+    return (
+        SOURCE_NAME_BY_SERVICE.get(key)
+        or SOURCE_NAME_BY_SERVICE.get(key.lower())
+        or key
+    )
 
 
 def _power_string(value: Any) -> str:

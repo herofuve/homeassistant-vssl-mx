@@ -157,3 +157,25 @@ selected.
 
 The rows of the `ui:` tree for these services are *containers* (navigation only): requesting
 `ui:/spotify` directly answers `invalidPath`. Only the action nodes above are addressable.
+
+### The "Streaming" input
+
+The VSSL app offers a fifth input called **Streaming** next to the physical ones. It is not
+a readable node (`getData` on any `ui:/*_plug` path answers `invalidPath`, even for AUX), but
+it *is* a valid `mediaRoles` target:
+
+```json
+{"path":"player:player/control","role":"activate","value":{
+  "control":"play",
+  "mediaRoles":{"type":"audio","path":"ui:/streamaux_plug","icon":"skin:iconStream",
+    "mediaData":{"metaData":{"serviceID":"Stream"},
+      "resources":[{"uri":"alsa://aux_plug?rate=48000?...","mimeType":"audio/unknown"}]}}}}
+```
+
+Verified on hardware: the reply is a new stream id and `playLogicData.trackRoles.path`
+becomes `ui:/streamaux_plug`. It reuses the **same ALSA resource as AUX**
+(`alsa://aux_plug`), which is why the play history labels it "VSSL Audio".
+
+Note the `serviceID` the device reports afterwards is whatever the streamer is playing —
+`"Spotify"` (capital S) when the streamer reports itself, `"spotify"` when the Connect
+session drives it — so name lookups must be case-insensitive.
