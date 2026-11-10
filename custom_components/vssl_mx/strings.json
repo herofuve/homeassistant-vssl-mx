@@ -37,5 +37,11 @@
       "cannot_connect": "Could not reach the device. Check the IP and that it answers on port 80 (http://IP/index.fcgi).",
       "unknown": "Unexpected error. Check the Home Assistant logs."
     }
+  },
+  "issues": {
+    "entity_id_collision": {
+      "title": "VSSL entity shares its name with another integration",
+      "description": "The media player `{entity_id}` is being used by VSSL MX, but its natural name `{base_id}` belongs to **{platform}** (usually Google Cast, because the amplifier is also a Cast target).\n\nNothing is broken, but automations that address `{base_id}` control {platform}, not the amplifier.\n\nTo fix it, rename the VSSL entity in *Settings → Devices & services → Entities* (for example to `{base_id}_ma1`) and update any automation that used the old name. Version 0.2.0 gives new installs a model suffix so this does not happen again."
+    }
   }
 }

@@ -37,5 +37,11 @@
       "cannot_connect": "No se pudo hablar con el equipo. Comprueba la IP y que responda en el puerto 80 (http://IP/index.fcgi).",
       "unknown": "Error inesperado. Revisa los registros de Home Assistant."
     }
+  },
+  "issues": {
+    "entity_id_collision": {
+      "title": "La entidad VSSL comparte nombre con otra integración",
+      "description": "El reproductor `{entity_id}` pertenece a VSSL MX, pero su nombre natural `{base_id}` lo ocupa **{platform}** (normalmente Google Cast, porque el amplificador también es un destino Cast).\n\nNo hay nada roto, pero las automatizaciones que apuntan a `{base_id}` controlan {platform}, no el amplificador.\n\nPara arreglarlo, renombra la entidad de VSSL en *Ajustes → Dispositivos y servicios → Entidades* (por ejemplo a `{base_id}_ma1`) y actualiza las automatizaciones que usaban el nombre anterior. La versión 0.2.0 añade el modelo al nombre en instalaciones nuevas para que no vuelva a pasar."
+    }
   }
 }

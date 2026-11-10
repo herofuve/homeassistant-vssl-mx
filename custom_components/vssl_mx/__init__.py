@@ -16,6 +16,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import VsslMxApi
 from .const import DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
 from .coordinator import VsslCoordinator
+from .repairs import async_check_entity_id_collision
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: VsslConfigEntry) -> bool
     entry.runtime_data = coordinator
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await async_check_entity_id_collision(hass, entry)
     _LOGGER.debug("VSSL MX ready at %s:%s", host, port)
     return True
 
