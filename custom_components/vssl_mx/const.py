@@ -16,7 +16,10 @@ DEFAULT_PORT: Final = 80
 DEFAULT_SCAN_INTERVAL: Final = timedelta(seconds=5)
 REQUEST_TIMEOUT: Final = 10
 
-# --- Rutas NSDK -------------------------------------------------------------
+# --- Options flow -----------------------------------------------------------
+CONF_ENTITY_NAME: Final = "entity_name"
+
+# --- NSDK paths -------------------------------------------------------------
 PATH_DEVICE_NAME: Final = "settings:/deviceName"
 PATH_VERSION: Final = "settings:/version"
 PATH_BOARD_NAME: Final = "settings:/system/boardName"

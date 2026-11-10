@@ -12,12 +12,14 @@ from homeassistant.components.media_player import (
     MediaPlayerState,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    CONF_ENTITY_NAME,
     DOMAIN,
     INPUT_KEY_BY_NAME,
     SOURCE_LIST,
@@ -28,6 +30,7 @@ from .const import (
     TRANSPORT_STOP,
 )
 from .coordinator import VsslCoordinator, VsslState
+from .naming import build_device_name
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,15 +79,24 @@ class VsslMediaPlayer(CoordinatorEntity[VsslCoordinator], MediaPlayerEntity):
         self._entry = entry
         identity = entry.data.get("identity") or {}
         mac = identity.get("mac")
-        model = identity.get("model") or "MA.1"
+        model = identity.get("model") or "MA1"
+        # The device name decides the entity_id (has_entity_name), and Google
+        # Cast registers the same amplifier with the same vendor name, so the
+        # model is appended to keep both apart: "Ampli Medusa (MA1)".
+        device_name = build_device_name(
+            identity.get("name") or entry.title,
+            model,
+            entry.options.get(CONF_ENTITY_NAME),
+        )
+        host = entry.options.get(CONF_HOST, entry.data.get(CONF_HOST))
         self._attr_unique_id = f"{mac or entry.entry_id}-media_player"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, mac or entry.entry_id)},
             manufacturer="VSSL",
             model=str(model),
-            name=identity.get("name") or entry.title,
+            name=device_name,
             sw_version=identity.get("version"),
-            configuration_url=f"http://{entry.data.get('host')}/",
+            configuration_url=f"http://{host}/",
         )
 
     # ----------------------------------------------------------------- State

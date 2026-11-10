@@ -24,25 +24,40 @@ PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
 VsslConfigEntry = ConfigEntry[VsslCoordinator]
 
 
+def endpoint(entry: ConfigEntry) -> tuple[str, int]:
+    """Effective host/port: the options flow wins over the original entry data.
+
+    The amplifier can move (DHCP, VLAN change, Tailscale address), so the
+    endpoint has to be editable without deleting and re-adding the entry —
+    otherwise every entity gets a new suffix and automations break.
+    """
+    host = str(entry.options.get(CONF_HOST, entry.data[CONF_HOST]))
+    port = int(entry.options.get(CONF_PORT, entry.data.get(CONF_PORT, DEFAULT_PORT)))
+    return host, port
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: VsslConfigEntry) -> bool:
     """Set up the entry created by the config flow."""
     session = async_get_clientsession(hass)
-    api = VsslMxApi(
-        session,
-        entry.data[CONF_HOST],
-        entry.data.get(CONF_PORT, DEFAULT_PORT),
-    )
+    host, port = endpoint(entry)
+    api = VsslMxApi(session, host, port)
     coordinator = VsslCoordinator(
         hass,
         api,
-        name=entry.title or entry.data[CONF_HOST],
+        name=entry.title or host,
         update_interval=DEFAULT_SCAN_INTERVAL,
     )
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    _LOGGER.debug("VSSL MX listo en %s", entry.data[CONF_HOST])
+    _LOGGER.debug("VSSL MX ready at %s:%s", host, port)
     return True
+
+
+async def _async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload after an options change (new IP, new entity name...)."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: VsslConfigEntry) -> bool:

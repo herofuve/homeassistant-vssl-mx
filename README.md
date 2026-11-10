@@ -64,6 +64,22 @@ Copy `custom_components/vssl_mx/` into your `config/custom_components/` folder a
 - For the power button to wake the unit from off, it must be in **network standby**
   (not unplugged).
 
+## Changing the IP address or the entity name
+
+*Settings → Devices & services → VSSL MX → Configure*:
+
+| Field | What it does |
+|---|---|
+| IP address / Port | Moves the entry to a new address (DHCP change, VLAN move, Tailscale). No entity is recreated, so automations keep working. |
+| Entity name | Overrides the name Home Assistant derives the `entity_id` from. Leave it empty to use the default `"<device name> (<model>)"`, e.g. `Living room (MA1)`. |
+
+**Why the model is in the name.** Home Assistant builds the `entity_id` from the device
+name. The amplifier is also a Google Cast target, and that integration registers the very
+same vendor name, so a plain name collides: whoever registers first keeps
+`media_player.<name>` and the other ends up as `…_2`. Appending the model keeps both apart
+(`media_player.living_room_ma1` vs `media_player.living_room`) without depending on what
+the user typed in the VSSL app.
+
 ## Known limitations
 
 - Polling every 5 s (4 parallel HTTP requests); the NSDK event queue is not used yet, so a

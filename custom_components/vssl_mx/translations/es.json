@@ -17,5 +17,25 @@
     "abort": {
       "already_configured": "Este amplificador ya está configurado."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de VSSL MX",
+        "description": "Cambia la dirección del amplificador o el nombre que muestra Home Assistant.",
+        "data": {
+          "host": "Dirección IP",
+          "port": "Puerto",
+          "entity_name": "Nombre de la entidad"
+        },
+        "data_description": {
+          "entity_name": "Opcional. Por defecto \"<nombre del equipo> (<modelo>)\", por ejemplo \"Salón (MA1)\". Esto decide el entity_id."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No se pudo hablar con el equipo. Comprueba la IP y que responda en el puerto 80 (http://IP/index.fcgi).",
+      "unknown": "Error inesperado. Revisa los registros de Home Assistant."
+    }
   }
 }

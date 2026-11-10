@@ -17,5 +17,25 @@
     "abort": {
       "already_configured": "This amplifier is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "VSSL MX options",
+        "description": "Change the amplifier address or the name Home Assistant shows for it.",
+        "data": {
+          "host": "IP address",
+          "port": "Port",
+          "entity_name": "Entity name"
+        },
+        "data_description": {
+          "entity_name": "Optional. Defaults to \"<device name> (<model>)\", e.g. \"Living room (MA1)\". This decides the entity_id."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the device. Check the IP and that it answers on port 80 (http://IP/index.fcgi).",
+      "unknown": "Unexpected error. Check the Home Assistant logs."
+    }
   }
 }
